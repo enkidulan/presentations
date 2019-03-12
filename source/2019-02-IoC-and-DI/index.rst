@@ -1,7 +1,3 @@
-The topic of presentation is Dependency injection and Inversion of Control.
-
-Please talk about what problem DI solves, the types of DIs, relation of DI to Design Patters, examples of DI/IoC in your favorite language.
-
 =============================================
 Dependency injection and Inversion of Control
 =============================================
@@ -11,13 +7,14 @@ by Maksym Shalenyi (enkidulan)
 Background story
 ================
 
-Or how Inversion of Control become to be.
+Or how Inversion of Control came to be.
 
 .. rst-class:: build
 
-    * imagen that it is 198x
-    * it's golden time Moore's law
+    * imagine that it is the 80s
+    * it's golden time of Moore's law
     * complexity of programs is growing exponentially
+    * Windows 1.0 is released
     * Balmer peak is invented
     * Inversion of control principle appears
 
@@ -51,16 +48,14 @@ What Inversion of Control is all about?
 Cases of IoC
 ============
 
-.. rst-class:: build
-
     * frameworks,
     * callbacks,
     * schedulers,
     * event loops,
-    * dependency injection design pattern,
-    * template method design pattern,
-    * service locator design pattern,
-    * strategy design pattern.
+    * dependency injection design pattern (creational type),
+    * template method design pattern (behavioral type),
+    * service locator design pattern (structural type),
+    * strategy design pattern (behavioral type).
 
 
 Dependency injection design pattern
@@ -69,6 +64,16 @@ Dependency injection design pattern
 .. rst-class:: build
 
     * technique whereby one object (or static method) supplies the dependencies of another object
+
+    * dependency injection involves four roles:
+
+        * the ``service object(s)`` to be used
+        * the ``client object`` that is depending on the service(s) it uses
+        * the ``interfaces`` that define how the client may use the services
+        * the ``injector``, which is responsible for constructing the services and injecting them into the client
+
+Comparing UML diagrams
+======================
 
         DI UML diagram
 
@@ -94,6 +99,8 @@ Dependency injection design pattern
 
 Dependency injection use case
 =============================
+
+Dependency injection implements IoC through composition.
 
 DI types
 ========
@@ -157,7 +164,8 @@ This is simply the client publishing a role interface to the setter methods of t
 
 Other DI
 ========
-Lot of DI frameworks have other types of injection beyond those presented above, for example ``pytest``:
+
+Lot of DI frameworks have other types of injection, for example ``pytest``:
 
 .. code-block:: python
 
@@ -169,3 +177,124 @@ Lot of DI frameworks have other types of injection beyond those presented above,
 
     def test_list(service_fixture):
         pass
+
+
+DI Advantages
+=============
+
+    * allows client to be configurable,
+    * makes clients more independent and task specific,
+    * makes client not care about concrete implementation of the service,
+    * reduces boilerplate code,
+    * allows concurrent or independent development,
+    * decreases coupling between a class and its dependency
+
+
+DI Disadvantages
+================
+
+    * configuration details must be supplied by construction code,
+    * can make code difficult to trace,
+    * requires more upfront development effort,
+    * forces complexity to move out of classes and into the linkages between classes,
+    * can encourage dependence on a dependency injection framework.
+
+Examples of DI/IoC in Python
+============================
+
+    * python-dependency-injector
+    * pytest
+    * pinject
+    * python-inject
+    * ...
+
+python-dependency-injector
+==========================
+
+.. code-block:: python
+
+    import dependency_injector.containers as containers
+    import dependency_injector.providers as providers
+
+    class Engines(containers.DeclarativeContainer):
+        """IoC container of engine providers."""
+        gasoline = providers.Factory(example.engines.GasolineEngine)
+        diesel = providers.Factory(example.engines.DieselEngine)
+        electro = providers.Factory(example.engines.ElectroEngine)
+
+    class Cars(containers.DeclarativeContainer):
+        """IoC container of car providers."""
+        gasoline = providers.Factory(example.cars.Car, engine=Engines.gasoline)
+        diesel = providers.Factory(example.cars.Car,engine=Engines.diesel)
+        electro = providers.Factory(example.cars.Car, engine=Engines.electro)
+
+    if __name__ == '__main__':
+        gasoline_car = Cars.gasoline()
+        diesel_car = Cars.diesel()
+        electro_car = Cars.electro()
+
+pytest
+======
+
+.. code-block:: python
+
+    import pytest
+
+    @pytest.fixture(scope="session")
+    def service_a_fixture():
+        yield
+
+    @pytest.fixture(scope="session")
+    def service_b_fixture(service_a_fixture):
+        yield
+
+    def test_list(service_b_fixture):
+        pass
+
+pinject
+=======
+
+.. code-block:: python
+
+    >>> class OuterClass(object):
+    ...     def __init__(self, inner_class):
+    ...         self.inner_class = inner_class
+    ...
+    >>> class InnerClass(object):
+    ...     def __init__(self):
+    ...         self.forty_two = 42
+    ...
+    >>> obj_graph = pinject.new_object_graph()
+    >>> outer_class = obj_graph.provide(OuterClass)
+    >>> print outer_class.inner_class.forty_two
+    42
+
+python-inject
+=============
+
+.. code-block:: python
+
+    @inject.autoparams()
+    def refresh_cache(cache: RedisCache, db: DbInterface):
+        pass
+
+    class User(object):
+        cache = inject.attr(Cache)
+
+        def __init__(self, id):
+            self.id = id
+
+        def save(self):
+            self.cache.save('users', self)
+
+    # `inject.param` is deprecated, use `inject.params` instead.
+    @inject.param('cache', Cache)
+    def bar(foo, cache=None):
+        cache.save('foo', foo)
+
+Questions?
+==========
+
+Thank you!
+==========
+
